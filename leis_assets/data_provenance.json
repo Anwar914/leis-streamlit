@@ -1,0 +1,13 @@
+{
+  "hours": 8760,
+  "first_utc": "2024-12-31 23:00:00+00:00",
+  "last_utc": "2025-12-31 22:00:00+00:00",
+  "temperature_min_C": -10.4,
+  "temperature_max_C": 36.1,
+  "price_mean_EUR_MWh": 89.32191210045663,
+  "sources": [
+    "DWD station 03668, TT_TU, original UTC timestamps",
+    "SMARD DE-LU, hourly export, Europe/Berlin converted to UTC"
+  ],
+  "calendar": "German local calendar year 2025; first UTC hour is 2024-12-31 23:00"
+}

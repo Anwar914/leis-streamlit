@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eisspeicher-Wärmepumpe – interaktiv</title>
+<style>
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.esx{--bg:#eef3f8;--card:#fff;--tx:#0f172a;--mu:#475569;--bd:#d5dde6;--ac:#0284c7;--sc:#e6eef6;max-width:1180px;margin:0 auto;padding:24px 16px;color:var(--tx)}
+@media (prefers-color-scheme:dark){.esx{--bg:#0b1220;--card:#111a2b;--tx:#e8eef7;--mu:#9fb0c6;--bd:#243249;--ac:#38bdf8;--sc:#16233a}body{background:#0b1220}}
+.esx h2{margin:0 0 4px;font-size:clamp(1.4rem,3vw,2rem)}
+.esx .sub{margin:0 0 16px;color:var(--mu)}
+.esx .grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px}
+@media (max-width:900px){.esx .grid{grid-template-columns:1fr}}
+.esx .stage{background:var(--sc);border:1px solid var(--bd);border-radius:16px;padding:8px;position:relative}
+.esx svg{width:100%;height:auto;display:block}
+.esx .part{cursor:pointer;outline:none;transition:filter .2s}
+.esx .part:hover,.esx .part:focus-visible,.esx .part.sel{filter:drop-shadow(0 0 7px rgba(14,165,233,.95)) brightness(1.08)}
+.esx .pf{fill:none;stroke:#fff;stroke-opacity:.8;stroke-width:2.2;stroke-dasharray:2 13;stroke-linecap:round;animation:esx 1.1s linear infinite}
+.esx .sl .pf{animation-duration:1.8s}.esx.regen .sl .pf{animation-duration:.55s}
+.esx.paused .pf,.esx.paused .rays{animation-play-state:paused}
+@keyframes esx{to{stroke-dashoffset:-15}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.esx .sun{opacity:0;transition:opacity .5s}.esx.regen .sun{opacity:1}
+.esx .rays{transform-origin:40px 40px;animation:spin 14s linear infinite}
+.esx .fan{transform-origin:365px 240px;animation:spin 1.2s linear infinite}
+.esx.paused .fan{animation-play-state:paused}
+@media (prefers-reduced-motion:reduce){.esx .pf,.esx .rays,.esx .fan{animation:none}}
+.esx .pill rect{fill:#fff;stroke:#1e293b;stroke-width:1.6}.esx .pill text{font:700 12px system-ui,sans-serif;fill:#0f172a;text-anchor:middle}
+.esx .bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:10px 6px 2px;font-size:.9rem;color:var(--mu)}
+.esx .bar label{display:flex;gap:8px;align-items:center}
+.esx input[type=range]{accent-color:var(--ac);width:150px}
+.esx button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:999px;padding:6px 12px}
+.esx button[aria-pressed=true],.esx button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.esx .kpi{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--tx);font-weight:600}
+.esx .panel{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.esx .panel h3{margin:0;font-size:1.25rem}.esx .panel .de{color:var(--mu);font-size:.85rem;margin-top:-8px}
+.esx .panel p{margin:0;line-height:1.55}
+.esx .phys{background:var(--sc);border-left:4px solid var(--ac);border-radius:8px;padding:10px 12px;font-size:.92rem}
+.esx ul{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:.9rem}
+.esx li{display:flex;justify-content:space-between;gap:10px;background:var(--sc);border-radius:8px;padding:7px 10px}
+.esx li b{text-align:right}.esx .photo{width:100%;border-radius:10px;display:none}
+.esx .live rect{fill:#0f172a;fill-opacity:.92;stroke:#38bdf8;stroke-opacity:.55}.esx .live text{font:600 10px ui-monospace,Menlo,Consolas,monospace;fill:#bae6fd}
+.esx circle.dot,.esx i.dot{fill:#22c55e;background:#22c55e;animation:bl 1.2s ease-in-out infinite}.esx i.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+@keyframes bl{50%{opacity:.25}}
+.esx .lh{font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:6px;margin-bottom:-4px}
+@media (prefers-reduced-motion:reduce){.esx .dot{animation:none}}
+.esx .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+</style>
+</head>
+<body>
+<section class="esx" id="esx">
+<h2>So funktioniert die Eisspeicher-Wärmepumpe</h2>
+<p class="sub">Klicke auf eine Komponente, um ihre Funktion zu sehen.</p>
+<div class="grid">
+<div class="stage">
+<svg viewBox="0 0 800 520" role="img" aria-label="Schema einer Eisspeicher-Wärmepumpenanlage">
+<defs>
+<linearGradient id="xM"><stop offset="0" stop-color="#8f9ba8"/><stop offset=".3" stop-color="#f1f5f9"/><stop offset=".62" stop-color="#b6c1cc"/><stop offset="1" stop-color="#737f8c"/></linearGradient>
+<linearGradient id="xB" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0b4f94"/><stop offset=".4" stop-color="#7cc8f5"/><stop offset="1" stop-color="#0a4a8a"/></linearGradient>
+<linearGradient id="xR" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8f1410"/><stop offset=".4" stop-color="#ff8a7d"/><stop offset="1" stop-color="#8a110d"/></linearGradient>
+<linearGradient id="xT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e53935"/><stop offset=".3" stop-color="#ef5350"/><stop offset=".6" stop-color="#7e57c2"/><stop offset=".85" stop-color="#1e88e5"/><stop offset="1" stop-color="#0d47a1"/></linearGradient>
+<linearGradient id="xI" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3fdff"/><stop offset="1" stop-color="#7fcdf0"/></linearGradient>
+<linearGradient id="xG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9d7c58"/><stop offset="1" stop-color="#5b4330"/></linearGradient>
+<linearGradient id="xW" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e3b373"/><stop offset="1" stop-color="#a8702f"/></linearGradient>
+<linearGradient id="xP" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a3f66"/><stop offset=".5" stop-color="#0e1a2f"/><stop offset="1" stop-color="#1c2f52"/></linearGradient>
+<linearGradient id="xL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c6e2ae"/><stop offset="1" stop-color="#93b67f"/></linearGradient>
+<radialGradient id="xS"><stop offset="0" stop-color="#fff7b0"/><stop offset="1" stop-color="#fbbf24"/></radialGradient>
+<filter id="xH" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="5" stdDeviation="4" flood-opacity=".3"/></filter>
+</defs>
+
+<rect x="15" y="335" width="320" height="170" rx="6" fill="url(#xG)"/>
+<rect x="15" y="335" width="320" height="10" fill="#6f9a4a"/>
+<g class="sun"><circle cx="40" cy="40" r="22" fill="url(#xS)"/><g class="rays" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"><path d="M40 6v10M40 64v10M6 40h10M64 40h10M16 16l7 7M57 57l7 7M64 16l-7 7M23 57l-7 7"/></g></g>
+<g class="pipes"></g>
+
+<g class="part" data-id="abs" tabindex="0" role="button" aria-label="Solar-Luft-Absorber" filter="url(#xH)">
+<rect x="140" y="150" width="9" height="190" fill="#7d8995"/>
+<polygon points="66,74 215,36 254,122 105,164" fill="#aab6c2"/>
+<polygon points="72,74 213,40 248,120 108,158" fill="url(#xP)"/>
+<g class="tubes"></g>
+<polygon points="105,164 254,122 254,130 105,172" fill="#7d8995"/>
+</g>
+
+<g class="part" data-id="eis" tabindex="0" role="button" aria-label="Eisspeicher" filter="url(#xH)">
+<path d="M90 365V470a85 24 0 0 0 170 0V365z" fill="url(#xM)"/>
+<rect x="108" y="388" width="134" height="68" rx="10" fill="url(#xI)" stroke="#475569" stroke-width="3"/>
+<g class="ice"></g>
+<g class="coil" fill="none" stroke="#0b6fb8" stroke-width="4" stroke-linecap="round"><path d="M114 402q16-12 32 0t32 0t32 0t32 0"/><path d="M114 423q16-12 32 0t32 0t32 0t32 0"/><path d="M114 444q16-12 32 0t32 0t32 0t32 0"/></g>
+<ellipse cx="175" cy="365" rx="85" ry="24" fill="#b8c3ce"/><ellipse cx="175" cy="362" rx="72" ry="17" fill="#e8eef4"/><circle cx="175" cy="362" r="9" fill="#9aa8b6" stroke="#64748b" stroke-width="2"/>
+</g>
+
+<g class="part" data-id="wp" tabindex="0" role="button" aria-label="Wärmepumpe" filter="url(#xH)">
+<path d="M285 195l22-14h160l-22 14z" fill="#f1f5f9"/><path d="M445 195l22-14v150l-22 14z" fill="#7d8995"/>
+<rect x="285" y="195" width="160" height="150" rx="5" fill="url(#xM)"/>
+<rect x="297" y="208" width="136" height="124" rx="4" fill="#1e293b"/>
+<rect x="308" y="226" width="34" height="92" rx="9" fill="url(#xB)"/><rect x="388" y="226" width="34" height="92" rx="9" fill="url(#xR)"/>
+<g fill="#fff" opacity=".8"><circle cx="318" cy="244" r="3"/><circle cx="330" cy="262" r="2.5"/><circle cx="320" cy="282" r="3"/><circle cx="331" cy="300" r="2.5"/></g>
+<circle cx="365" cy="240" r="19" fill="url(#xM)" stroke="#475569" stroke-width="2"/><g class="fan"><path d="M365 240V225M365 240l13 7M365 240l-13 7" stroke="#334155" stroke-width="4" stroke-linecap="round"/></g>
+<path d="M325 226V212H349M381 240H405V226M405 318V328H325V318" fill="none" stroke="#475569" stroke-width="4" stroke-linecap="round"/>
+<path class="pf" d="M325 226V212H349M381 240H405V226M405 318V328H325V318"/>
+<rect x="358" y="322" width="14" height="12" rx="3" fill="#f59e0b"/>
+</g>
+
+<g class="part" data-id="st" tabindex="0" role="button" aria-label="Steuerung" filter="url(#xH)">
+<path d="M370 158v30" stroke="#94a3b8" stroke-width="3" stroke-dasharray="4 4"/>
+<rect x="316" y="36" width="108" height="90" rx="9" fill="#e9eef3" stroke="#94a3b8" stroke-width="2"/>
+<rect x="326" y="45" width="88" height="42" rx="4" fill="url(#xL)" stroke="#5b7a49" stroke-width="2"/>
+<text x="331" y="58" font-family="monospace" font-size="9" fill="#2f4a22">Auto  11:05</text>
+<text class="lcd" x="370" y="79" text-anchor="middle" font-family="monospace" font-size="17" font-weight="700" fill="#1f3315"></text>
+<rect x="326" y="94" width="40" height="10" rx="3" fill="#cbd5e1"/><rect x="374" y="94" width="40" height="10" rx="3" fill="#cbd5e1"/>
+</g>
+
+<g class="part" data-id="pu" tabindex="0" role="button" aria-label="Pufferspeicher" filter="url(#xH)">
+<rect x="582" y="425" width="10" height="16" fill="#64748b"/><rect x="648" y="425" width="10" height="16" fill="#64748b"/>
+<path d="M575 270V420a45 14 0 0 0 90 0V270z" fill="url(#xM)"/>
+<rect x="592" y="286" width="56" height="120" rx="14" fill="url(#xT)" stroke="#475569" stroke-width="3"/>
+<ellipse cx="620" cy="270" rx="45" ry="14" fill="#dfe6ec"/>
+</g>
+
+<g class="part" data-id="fl" tabindex="0" role="button" aria-label="Flächenheizung" filter="url(#xH)">
+<rect x="560" y="34" width="220" height="96" fill="#d4dbe1" stroke="#94a3b8" stroke-width="2"/>
+<rect x="545" y="130" width="235" height="55" fill="url(#xW)"/>
+<path d="M545 130l15-8h220v8z" fill="#c99456"/>
+<path d="M556 145H765a7.5 7.5 0 0 1 0 15H556a7.5 7.5 0 0 0 0 15H765" fill="none" stroke="#e53935" stroke-width="5" stroke-linecap="round"/>
+<path class="pf" d="M556 145H765a7.5 7.5 0 0 1 0 15H556a7.5 7.5 0 0 0 0 15H765"/>
+</g>
+<g class="pills"></g>
+<g class="lives" pointer-events="none"></g>
+</svg>
+<div class="bar">
+<button class="play" aria-pressed="true">⏸ Pause</button>
+<button class="regen" aria-pressed="false">☀ Regeneration</button>
+<label>Eisanteil <input type="range" class="ice-s" min="0" max="100" step="0.1" value="40"></label>
+<span class="kpi"></span>
+</div>
+</div>
+<aside class="panel" aria-live="polite">
+<h3 class="t"></h3><div class="de"></div>
+<img class="photo" alt="">
+<p class="d"></p>
+<div class="phys"><b>Physik: </b><span class="p"></span></div>
+<ul class="s"></ul>
+<div class="lh"><i class="dot"></i> Demo-Werte</div><ul class="lv"></ul>
+<div class="chips"></div>
+</aside>
+</div>
+</section>
+<script>
+(()=>{
+const R=document.getElementById('esx'),q=s=>R.querySelector(s),NS='http://www.w3.org/2000/svg';
+const D={
+abs:{n:'Solar-Luft-Absorber',de:'Energieabsorber',x:130,y:12,img:'',
+d:'Der unverglaste Absorber nimmt Wärme aus Sonne, Außenluft und Regen auf und leitet sie in den Eisspeicher. So wird der Speicher regeneriert und das Eis bei milden Temperaturen wieder geschmolzen.',
+p:'Regeneration: Im Projektmodell Luft über +3 °C erwärmt die Sole im Absorber, die ihre Wärme im Speicher abgibt.',
+s:[['Medium','Sole (Wasser-Glykol)'],['Regeneration ab','> 3 °C im Projektmodell'],['Einbau','Dach oder Fassade']]},
+eis:{n:'Eisspeicher',de:'Latentwärmespeicher',x:175,y:492,img:'',
+d:'Eine erdverbaute Zisterne voll Wasser. Wärmetauscher-Rohre entziehen dem Wasser Wärme. Beim Gefrieren wird die Kristallisationswärme frei, die die Wärmepumpe nutzt.',
+p:'Kristallisationsenergie: 1 l Wasser beim Gefrieren liefert so viel Energie, wie nötig ist, um 1 l Wasser von 0 °C auf rund 80 °C zu erwärmen.',
+s:[['Volumen','21,2 m³ (Projektannahme)'],['Temperatur beim Gefrieren','0 °C'],['Wärmetauscher','Kunststoff-Rohrwendel']]},
+wp:{n:'Wärmepumpe',de:'Sole-Wasser-Wärmepumpe',x:365,y:372,img:'',
+d:'Der Verdampfer nimmt die Wärme der Sole auf, der Verdichter hebt sie auf ein hohes Temperaturniveau, der Verflüssiger gibt sie an das Heizwasser ab. Das Expansionsventil schließt den Kreis.',
+p:'Kompressions-Kältekreislauf: Aus 1 kWh Strom werden mit Umweltwärme rund 4–5 kWh Heizwärme.',
+s:[['Leistungszahl COP','ca. 4,5–5,2'],['Vorlauf','35–45 °C'],['Verdichter','Scroll']]},
+st:{n:'Steuerung',de:'Regler / Energiemanager',x:370,y:150,img:'',
+d:'Die Regelung schaltet zwischen Heizbetrieb und Regeneration um, überwacht Sole- und Speichertemperatur und kann eine vollständige Entladung begrenzen; das Projektmodell erlaubt SOC 0 %.',
+p:'Regelung: Eisanteil und Soletemperatur sind die Führungsgrößen, die Außentemperatur dient als Störgröße.',
+s:[['Messgrößen','Sole, Eis, Puffer, Außen'],['Betriebsarten','Heizen, Regeneration'],['Schutz','Vereisungsgrenze']]},
+pu:{n:'Pufferspeicher',de:'Heizwasser-Pufferspeicher',x:620,y:466,img:'',
+d:'Der Pufferspeicher nimmt die Wärme der Wärmepumpe auf und gibt sie nach Bedarf an die Heizung ab. Er verhindert häufiges Ein- und Ausschalten des Verdichters.',
+p:'Temperaturschichtung: Warmes Wasser steigt nach oben, kühles bleibt unten und wird zur Wärmepumpe zurückgeführt.',
+s:[['Volumen','300–800 l'],['Oben','ca. 40 °C'],['Unten','ca. 28 °C']]},
+fl:{n:'Flächenheizung',de:'Fußboden- und Wandheizung',x:670,y:84,img:'',
+d:'Große Heizflächen geben Wärme schon bei niedrigen Vorlauftemperaturen ab. Das ist ideal für Wärmepumpen, denn je niedriger der Vorlauf, desto besser der COP.',
+p:'Niedertemperaturheizung: Etwa 1 K weniger Vorlauftemperatur verbessert die Effizienz der Wärmepumpe spürbar.',
+s:[['Vorlauf','ca. 35 °C'],['Rücklauf','ca. 28 °C'],['Verlegung','Rohrschleifen im Estrich']]}
+};
+const mk=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);(p||null)&&p.appendChild(e);return e};
+const pipes=[['M112 160V358','#f59e0b','sl'],['M96 358V162','#2563eb','sl'],['M255 430H272V300H300','#2563eb'],['M335 340V400H255','#2563eb'],['M430 262H560V280H578','#ef4444'],['M578 418H410V330','#2563eb'],['M660 280H705V170','#ef4444'],['M755 170V412H660','#2563eb']];
+const pg=q('.pipes');
+pipes.forEach(([d,c,k])=>{const g=mk('g',{class:k||''},pg);mk('path',{d,fill:'none',stroke:'#1e293b','stroke-opacity':.4,'stroke-width':10,'stroke-linejoin':'round'},g);mk('path',{d,fill:'none',stroke:c,'stroke-width':6.5,'stroke-linejoin':'round'},g);mk('path',{d,class:'pf','stroke-linejoin':'round'},g)});
+const tg=q('.tubes');
+for(let i=0;i<=9;i++){const u=.06+i*.098,a=[66+(105-66)*u+6,74+(164-74)*u],b=[215+(254-215)*u-4,36+(122-36)*u];
+mk('path',{d:`M${a[0]} ${a[1]}L${b[0]} ${b[1]}`,stroke:'#33507f','stroke-width':7,'stroke-linecap':'round'},tg);
+mk('path',{d:`M${a[0]} ${a[1]-2}L${b[0]} ${b[1]-2}`,stroke:'#9db8e6','stroke-opacity':.55,'stroke-width':1.6,'stroke-linecap':'round'},tg)}
+const ig=q('.ice');let s=7;const rn=()=>(s=(s*9301+49297)%233280)/233280;
+for(let i=0;i<16;i++){const x=116+rn()*118,y=394+rn()*56,r=4+rn()*7;
+mk('polygon',{points:`${x},${y-r} ${x+r*.9},${y-r*.3} ${x+r*.6},${y+r*.8} ${x-r*.6},${y+r*.8} ${x-r*.9},${y-r*.3}`,fill:'#fff','fill-opacity':.85,stroke:'#a5e3fa'},ig)}
+const pl=q('.pills');
+Object.entries(D).forEach(([id,o])=>{const g=q(`[data-id=${id}]`),w=o.n.length*7+18,p=mk('g',{class:'pill'},g);
+mk('rect',{x:o.x-w/2,y:o.y-10,width:w,height:22,rx:11},p);const t=mk('text',{x:o.x,y:o.y+5},p);t.textContent=o.n});
+const chips=q('.chips'),parts=[...R.querySelectorAll('.part')];
+function sel(id){const o=D[id];parts.forEach(p=>p.classList.toggle('sel',p.dataset.id===id));
+q('.t').textContent=o.n;q('.de').textContent=o.de;q('.d').textContent=o.d;q('.p').textContent=o.p;
+const im=q('.photo');im.style.display=o.img?'block':'none';if(o.img){im.src=o.img;im.alt=o.n}
+q('.s').innerHTML=o.s.map(r=>`<li><span>${r[0]}</span><b>${r[1]}</b></li>`).join('');
+chips.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.id===id));cur=id;renderLive()}
+Object.entries(D).forEach(([id,o])=>{const b=document.createElement('button');b.textContent=o.n;b.dataset.id=id;b.onclick=()=>sel(id);chips.appendChild(b)});
+parts.forEach(p=>{p.onclick=()=>sel(p.dataset.id);p.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();sel(p.dataset.id)}}});
+const sl=q('.ice-s'),f=n=>n.toFixed(1).replace('.',',');
+function upd(){const v=+sl.value,t=6-v*.075,cop=5.2-v*.018;
+q('.lcd').textContent=f(t)+'°C';q('.ice').style.opacity=.2+.8*v/100;
+q('.kpi').textContent=`Sole ${f(t)} °C · COP ${f(cop)}`}
+sl.oninput=upd;upd();
+q('.play').onclick=e=>{const p=R.classList.toggle('paused');e.target.setAttribute('aria-pressed',!p);e.target.textContent=p?'▶ Start':'⏸ Pause'};
+q('.regen').onclick=e=>{const r=R.classList.toggle('regen');e.target.setAttribute('aria-pressed',r)};
+let cur='eis',t0=0;const S={},ext={},rnd=a=>(Math.random()-.5)*a,r0=Math.round;
+function model(nd){t0++;const regen=R.classList.contains('regen');let v=+sl.value;
+if(!nd)v=Math.min(100,Math.max(0,v+(regen?-.5:.2)));sl.value=v;
+const out=5+4*Math.sin(t0/25)+rnd(.4),sole=6-v*.075+(regen?2:0)+rnd(.1),cop=Math.min(5.8,5.2-v*.018+(out-5)*.03+rnd(.04)),qq=8.5+rnd(.3);
+Object.assign(S,{regen,v,out,sole,cop,q:qq,el:qq/cop,top:40+rnd(.5),bot:28+rnd(.5),vl:35+rnd(.3),rl:28+rnd(.3),raum:21+rnd(.1),sun:regen?650+rnd(60):120+rnd(20)},ext)}
+const C={
+abs:{x:160,y:178,w:112,L:()=>['Außen '+f(S.out)+' °C','Einstr. '+r0(S.sun)+' W/m²'],P:()=>[['Außenluft',f(S.out)+' °C'],['Einstrahlung',r0(S.sun)+' W/m²'],['Regeneration',S.regen?'aktiv':'aus']]},
+eis:{x:14,y:372,w:76,L:()=>['Eis '+r0(S.v)+' %','Sole '+f(S.sole)+'°C'],P:()=>[['Eisanteil',r0(S.v)+' %'],['Soletemperatur',f(S.sole)+' °C'],['Zustand',S.regen?'taut ab':'vereist']]},
+wp:{x:474,y:196,w:88,L:()=>['COP '+f(S.cop),'Heiz '+f(S.q)+' kW','Strom '+f(S.el)+' kW'],P:()=>[['COP aktuell',f(S.cop)],['Heizleistung',f(S.q)+' kW'],['Elektr. Leistung',f(S.el)+' kW']]},
+st:{x:430,y:46,w:128,L:()=>['Modus: '+(S.regen?'Regeneration':'Heizen'),'Raum '+f(S.raum)+' °C'],P:()=>[['Modus',S.regen?'Regeneration':'Heizen'],['Soletemperatur',f(S.sole)+' °C'],['Raumtemperatur',f(S.raum)+' °C']]},
+pu:{x:575,y:480,w:90,L:()=>['oben  '+f(S.top)+'°C','unten '+f(S.bot)+'°C'],P:()=>[['Oben',f(S.top)+' °C'],['Unten',f(S.bot)+' °C']]},
+fl:{x:584,y:100,w:172,L:()=>['Vor '+f(S.vl)+' °C · Rück '+f(S.rl)+' °C'],P:()=>[['Vorlauf',f(S.vl)+' °C'],['Rücklauf',f(S.rl)+' °C'],['Raum',f(S.raum)+' °C']]}};
+model(1); const lg=q('.lives');
+Object.values(C).forEach(c=>{const n=c.L().length,g=mk('g',{class:'live'},lg);mk('rect',{x:c.x,y:c.y,width:c.w,height:n*12+10,rx:6},g);mk('circle',{class:'dot',cx:c.x+c.w-7,cy:c.y+7,r:2.5},g);
+c.t=c.L().map((_,i)=>{const e=mk('text',{x:c.x+6,y:c.y+15+i*12},g);return e})});
+function renderLive(){q('.lv').innerHTML=C[cur].P().map(r=>`<li><span>${r[0]}</span><b>${r[1]}</b></li>`).join('')}
+function draw(){Object.values(C).forEach(c=>{const l=c.L();c.t.forEach((e,i)=>e.textContent=l[i])});
+q('.lcd').textContent=f(S.sole)+'°C';q('.ice').style.opacity=.2+.8*S.v/100;q('.kpi').textContent='Sole '+f(S.sole)+' °C · COP '+f(S.cop);renderLive()}
+sl.oninput=()=>{model(1);draw()};
+setInterval(()=>{if(!R.classList.contains('paused')){model();draw()}},1000);
+window.EisspeicherLive={set:o=>{Object.assign(ext,o);model(1);draw()},clear:()=>{for(const k in ext)delete ext[k]}};
+model(1);draw();
+sel('eis');
+})();
+</script>
+</body>
+</html>
+
+
